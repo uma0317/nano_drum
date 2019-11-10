@@ -3,12 +3,13 @@ use rodio::decoder::DecoderError;
 use rodio::{Decoder, Device, Sink};
 use std::error::Error;
 use std::io::{stdin, BufReader, Read, Seek};
-
+use std::marker::Send;
 fn main() {
 	println!("Hello, world!");
 	let device = rodio::default_output_device().unwrap();
 	let sink = Sink::new(&device);
 	let file = std::fs::File::open("Processed/High Tom08.wav").unwrap();
+	let decoded = Decoder::new(file).unwrap();
 	let out_put_device = OutputDevice::new(device, sink, decoded);
 
 	run(out_put_device);
@@ -40,15 +41,14 @@ where
 	}
 
 	fn play(&self, sound: Decoder<R>) {
-		let decoded = rodio::Decoder::new(BufReader::new(file)).unwrap();
-		self.sink.append(sound);
+		self.sink.append(sound as &rodio::source::Source);
 		self.sink.sleep_until_end();
 	}
 }
 
 fn run<R>(out_put_device: OutputDevice<R>) -> Result<(), Box<dyn Error>>
 where
-	R: Read + Seek,
+	R: Read + Seek + Send,
 {
 	let mut input = String::new();
 	let mut midi_in = MidiInput::new("nanoPAD2")?;

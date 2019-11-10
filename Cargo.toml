@@ -6,6 +6,8 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["winuser", "winbase","shellapi","playsoundapi"] }
+
 [dependencies]
 midir = {path = "./midir"}
-rodio = "0.9.0"
